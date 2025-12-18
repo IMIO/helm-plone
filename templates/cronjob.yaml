@@ -1,0 +1,66 @@
+---
+{{- if .Values.plone.zodbpack.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "plone.fullname" . }}-zodbpack
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: zodbpack
+spec:
+  schedule: {{ .Values.plone.zodbpack.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.plone.zodbpack.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.plone.zodbpack.failedJobsHistoryLimit }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "plone.labels" . | nindent 12 }}
+            app.kubernetes.io/component: zodbpack
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          restartPolicy: OnFailure
+          {{- with .Values.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: zodbpack
+              {{- with .Values.securityContext }}
+              securityContext:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              {{- with .Values.plone.workingDir }}
+              workingDir: {{ . }}
+              {{- end }}
+              command:
+                - /bin/sh
+                - -c
+                - {{ .Values.plone.zodbpack.command | quote }}
+              {{- with .Values.plone.env }}
+              env:
+                {{- range $key, $value := . }}
+                - name: {{ $key }}
+                  value: {{ tpl ($value | toString) $ | quote }}
+                {{- end }}
+              {{- end }}
+              {{- with .Values.plone.zodbpack.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with .Values.volumeMounts }}
+              volumeMounts:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+          {{- with .Values.volumes }}
+          volumes:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}

@@ -1,0 +1,20 @@
+{{- if .Values.memcached.enabled -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "plone.fullname" . }}-test-memcached"
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: memcached-test
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+          nc -zv {{ include "plone.fullname" . }}-memcached 11211
+  restartPolicy: Never
+{{- end }}

@@ -1,0 +1,20 @@
+{{- if .Values.solr.enabled -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "plone.fullname" . }}-test-solr"
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: solr-test
+      image: curlimages/curl:latest
+      command:
+        - sh
+        - -c
+        - |
+          curl -f http://{{ include "plone.fullname" . }}-solr:{{ .Values.solr.port }}/solr/
+  restartPolicy: Never
+{{- end }}

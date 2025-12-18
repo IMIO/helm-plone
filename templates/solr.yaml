@@ -1,0 +1,180 @@
+---
+{{- if .Values.solr.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "plone.fullname" . }}-solr
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: solr
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.solr.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "plone.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: solr
+{{- end }}
+---
+{{- if and .Values.solr.enabled .Values.solr.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "plone.fullname" . }}-solr
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: solr
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.solr.persistence.size }}
+{{- end }}
+---
+{{- if .Values.solr.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "plone.fullname" . }}-solr
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: solr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "plone.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: solr
+  template:
+    metadata:
+      labels:
+        {{- include "plone.labels" . | nindent 8 }}
+        app.kubernetes.io/component: solr
+    spec:
+      {{- if .Values.solr.config.enabled }}
+      initContainers:
+        - name: git-sync
+          image: registry.k8s.io/git-sync/git-sync:v4.3.0
+          args:
+            - --repo={{ .Values.solr.config.gitRepo }}
+            - --ref={{ .Values.solr.config.gitBranch }}
+            - --depth=0
+            - --one-time
+            - --root=/tmp/git
+          volumeMounts:
+            - name: git-data
+              mountPath: /tmp/git
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+        - name: copy-config
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Copying Solr configuration from git repo..."
+              mkdir -p {{ .Values.solr.config.mountPath }}
+              cp -r /tmp/git/{{ .Values.solr.config.gitPath }}/plone/* {{ .Values.solr.config.mountPath }}/
+              chown -R 8983:8983 {{ .Values.solr.config.mountPath }}
+              ls -la {{ .Values.solr.config.mountPath }}
+              echo "Configuration copied successfully"
+          volumeMounts:
+            - name: git-data
+              mountPath: /tmp/git
+            - name: solr-config
+              mountPath: {{ .Values.solr.config.mountPath }}
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+      {{- end }}
+      containers:
+        - name: solr
+          image: "{{ .Values.solr.image.repository }}:{{ .Values.solr.image.tag }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.solr.port }}
+              protocol: TCP
+          {{- with .Values.solr.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          {{- if .Values.solr.persistence.enabled }}
+            - name: solr-data
+              mountPath: /var/solr/data
+          {{- end }}
+          {{- if .Values.solr.config.enabled }}
+            - name: solr-config
+              mountPath: {{ .Values.solr.config.mountPath }}
+          {{- end }}
+      volumes:
+      {{- if .Values.solr.persistence.enabled }}
+        - name: solr-data
+          persistentVolumeClaim:
+            claimName: {{ include "plone.fullname" . }}-solr
+      {{- end }}
+      {{- if .Values.solr.config.enabled }}
+        - name: solr-config
+          emptyDir: {}
+        - name: git-data
+          emptyDir: {}
+      {{- end }}
+{{- end }}
+---
+{{- if and .Values.solr.enabled .Values.solr.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "plone.fullname" . }}-solr
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: solr
+  {{- with .Values.solr.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.solr.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- if .Values.solr.ingress.tls }}
+  tls:
+    {{- range .Values.solr.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.solr.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- with .pathType }}
+            pathType: {{ . }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "plone.fullname" $ }}-solr
+                port:
+                  number: {{ $.Values.solr.port }}
+          {{- end }}
+    {{- end }}
+{{- end }}

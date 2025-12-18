@@ -1,0 +1,23 @@
+{{- if .Values.postgresql.enabled -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "plone.fullname" . }}-test-postgres"
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: postgres-test
+      image: postgres:14.2
+      command:
+        - sh
+        - -c
+        - |
+          pg_isready -h {{ include "plone.fullname" . }}-postgres -p 5432 -U {{ .Values.postgresql.auth.username }}
+      env:
+        - name: PGPASSWORD
+          value: {{ .Values.postgresql.auth.password | quote }}
+  restartPolicy: Never
+{{- end }}

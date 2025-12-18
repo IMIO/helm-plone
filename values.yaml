@@ -1,0 +1,264 @@
+# Default values for plone.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: plone-backend # Replace with your actual Plone image
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets:
+  - name: regcred
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  port: 8080
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: "traefik"
+  annotations: {}
+    # kubernetes.io/ingress.class: traefik
+    # traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  hosts:
+    - host: plone.traefik.me
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - plone.traefik.me
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  tcpSocket:
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+readinessProbe:
+  tcpSocket:
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Plone specific configuration
+plone:
+  workingDir: "/plone"
+  command:
+    - bin/instance
+    - console
+  initContainer:
+    enabled: true
+    command:
+      - /bin/sh
+      - -c
+      - |
+        bin/instance start && sleep 30 && bin/instance stop
+    env:
+      ACTIVE_BIGBANG: "True"
+  zodbpack:
+    enabled: true
+    schedule: "0 5 * * 0"  # Every Sunday at 5:00 AM
+    command: "/plone/bin/zodbpack -d 14 /plone/pack.cfg"
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 1
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+  env:
+    MEMCACHE_SERVER: "172.17.0.1"
+    MEMCACHE_DEFAULT_AGE: "10800"
+    ENV: "dev"
+    CACHING_SERVERS: "varnish.staging.imio.be:5000"
+    DOMAINS: "localhost"
+    RELSTORAGE_DB: "zope"
+    RELSTORAGE_USER: "zope"
+    RELSTORAGE_PASSWORD: "zope"
+    RELSTORAGE_HOSTNAME: "{{ .Release.Name }}-postgres"
+    RELSTORAGE_PORT: "5432"
+    ZODB_CACHE_SIZE: "30000"
+    ZEO_CLIENT_CACHE_SIZE: "256MB"
+    PROJECT_ID: "helm"
+    PLONE_EXTENSION_IDS: "plone.app.caching:default,plonetheme.barceloneta:default,imio.smartweb.policy:default"
+    DEFAULT_LANGUAGE: "en"
+    ACTIVE_BIGBANG: "False"
+    COLLECTIVE_SOLR_HOST: "{{ .Release.Name }}-solr"
+    COLLECTIVE_SOLR_PORT: "8983"
+    COLLECTIVE_SOLR_BASE: "/solr/web"
+    COLLECTIVE_SOLR_LOGIN: "solr"
+    COLLECTIVE_SOLR_PASSWORD: "SolrRocks"
+    application_id: "iA.Smartweb"
+    keycloak_realm: "belleville-ac"
+    keycloak_url: "https://keycloak.cloud.imio-test.be/"
+    keycloak_client_id: "smartweb-local"
+    keycloak_client_secret: ""
+    keycloak_issuer: "https://keycloak.cloud.imio-test.be/realms/belleville-ac/"
+    keycloak_redirect_uris: ["http://localhost:8080/Plone/acl_users/oidc/callback"]
+    DIRECTORY_URL: "https://annuaire.staging.imio.be"
+    EVENTS_URL: "https://agenda.staging.imio.be"
+    NEWS_URL: "https://actualites.staging.imio.be"
+    WCA_URL: ""
+    RESTAPI_DIRECTORY_CLIENT_ID: ""
+    RESTAPI_DIRECTORY_CLIENT_SECRET: ""
+    RESTAPI_EVENTS_CLIENT_ID: ""
+    RESTAPI_EVENTS_CLIENT_SECRET: ""
+    RESTAPI_NEWS_CLIENT_ID: ""
+    RESTAPI_NEWS_CLIENT_SECRET: ""
+
+# PostgreSQL configuration
+postgresql:
+  enabled: false
+  auth:
+    database: zope
+    username: zope
+    password: zope
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# Solr configuration
+solr:
+  enabled: false
+  image:
+    repository: solr
+    tag: "9.6.1-slim"
+  port: 8983
+  persistence:
+    enabled: true
+    size: 8Gi
+  config:
+    enabled: true
+    gitRepo: "https://github.com/IMIO/buildout.smartweb.git"
+    gitBranch: "main"
+    gitPath: "solr"
+    mountPath: "/var/solr/data/plone"
+  ingress:
+    enabled: false
+    className: "traefik"
+    annotations: {}
+      # traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    hosts:
+      - host: solr.traefik.me
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+    #  - secretName: solr-tls
+    #    hosts:
+    #      - solr.traefik.me
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+# Memcached configuration
+memcached:
+  enabled: true
+  image:
+    repository: memcached
+    tag: "1.5.20"
+  arguments:
+    - "-m"
+    - "1024"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
