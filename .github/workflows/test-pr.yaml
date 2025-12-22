@@ -1,0 +1,14 @@
+---
+name: Lint and Test Charts on PR
+
+on: [pull_request]
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint and Test Charts
+        uses: IMIO/gha/helm-test-notify@v4
+        with:
+          HELM_RELEASE: plone
+          HELM_NAMESPACE: plone

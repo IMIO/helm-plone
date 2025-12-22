@@ -1,0 +1,27 @@
+---
+name: Helm Release
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Lint and Test Charts
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Helm Release
+        uses: IMIO/gha/helm-release-notify@v4
+        with:
+          TARGET_DIR: plone
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.COMMON_MATTERMOST_WEBHOOK_URL }}
+          APP_ID: ${{ secrets.APP_ID }}
+          PRIVATE_KEY: ${{ secrets.APPS_PRIVATE_KEY_IMIO_HELM_CHARTS }}
