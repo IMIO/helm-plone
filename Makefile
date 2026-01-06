@@ -25,6 +25,11 @@ release:
 		echo "Error: Tag $(VERSION) already exists"; \
 		exit 1; \
 	fi; \
+	echo "Updating Chart.yaml version to $(VERSION)..."; \
+	sed -i "s/^version: .*/version: $(VERSION)/" Chart.yaml && \
+	git add Chart.yaml && \
+	git commit -m "chore: Bump version to $(VERSION)" && \
 	git tag -a "$(VERSION)" -m "$(MESSAGE)" && \
+	git push origin main && \
 	git push origin "$(VERSION)" && \
-	echo "Tag $(VERSION) created and pushed successfully"
+	echo "Chart version updated, tag $(VERSION) created and pushed successfully"
