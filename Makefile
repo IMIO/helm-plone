@@ -11,6 +11,12 @@ lint:
 	@helm template test . --namespace test > /dev/null
 	@echo "✓ Helm template test passed"
 
+.PHONY: ct-lint  # Run chart-testing lint using Docker
+ct-lint:
+	@echo "Running chart-testing lint with Docker..."
+	@docker run --rm -v $(shell pwd)/..:/workdir --workdir /workdir quay.io/helmpack/chart-testing:latest ct lint --chart-dirs . --charts plone --validate-maintainers=false
+	@echo "✓ Chart-testing lint passed"
+
 .PHONY: release  # Create and push a git tag (usage: make release VERSION=1.0.0 MESSAGE="my release message")
 release:
 	@if [ -z "$(VERSION)" ]; then \
