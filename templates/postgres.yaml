@@ -1,5 +1,5 @@
 ---
-{{- if .Values.postgresql.enabled -}}
+{{- if .Values.postgresql.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -19,7 +19,7 @@ spec:
     app.kubernetes.io/component: postgres
 {{- end }}
 ---
-{{- if and .Values.postgresql.enabled .Values.postgresql.primary.persistence.enabled -}}
+{{- if and .Values.postgresql.enabled .Values.postgresql.primary.persistence.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -35,7 +35,7 @@ spec:
       storage: {{ .Values.postgresql.primary.persistence.size }}
 {{- end }}
 ---
-{{- if .Values.postgresql.enabled -}}
+{{- if .Values.postgresql.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

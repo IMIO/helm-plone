@@ -2,6 +2,15 @@
 help:
 	@cat "Makefile" | grep '^.PHONY:' | sed -e "s/^.PHONY:/- make/"
 
+.PHONY: lint  # Lint and test the Helm chart (as in GitHub Actions)
+lint:
+	@echo "Running Helm lint..."
+	@helm lint .
+	@echo "✓ Helm lint passed"
+	@echo "Running Helm template test..."
+	@helm template test . --namespace test > /dev/null
+	@echo "✓ Helm template test passed"
+
 .PHONY: release  # Create and push a git tag (usage: make release VERSION=1.0.0 MESSAGE="my release message")
 release:
 	@if [ -z "$(VERSION)" ]; then \

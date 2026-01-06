@@ -1,5 +1,5 @@
 ---
-{{- if .Values.solr.enabled -}}
+{{- if .Values.solr.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -19,7 +19,7 @@ spec:
     app.kubernetes.io/component: solr
 {{- end }}
 ---
-{{- if and .Values.solr.enabled .Values.solr.persistence.enabled -}}
+{{- if and .Values.solr.enabled .Values.solr.persistence.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -35,7 +35,7 @@ spec:
       storage: {{ .Values.solr.persistence.size }}
 {{- end }}
 ---
-{{- if .Values.solr.enabled -}}
+{{- if .Values.solr.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -134,7 +134,7 @@ spec:
       {{- end }}
 {{- end }}
 ---
-{{- if and .Values.solr.enabled .Values.solr.ingress.enabled -}}
+{{- if and .Values.solr.enabled .Values.solr.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
