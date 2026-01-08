@@ -3,12 +3,16 @@ name: plone
 description: A Helm chart for Plone CMS on Kubernetes with PostgreSQL, Solr, and Memcached
 home: https://github.com/IMIO/helm-charts
 sources:
-  - https://github.com/imio/plone6-k8s
+  - https://github.com/IMIO/plone6-k8s
 
 maintainers:
-  - name: iMio
-    url: https://github.com/IMIO/
+  - name: bsuttor
+    email: benoit.suttor@imio.be
 
+keywords:
+  - plone
+  - zope
+  - cms
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
@@ -29,3 +33,4 @@ version: 0.0.2
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "6.0"
+# icon: https://plone.org/logo/plone-logo-220x220.png
