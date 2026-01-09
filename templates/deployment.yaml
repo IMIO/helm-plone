@@ -136,9 +136,9 @@ spec:
               value: {{ tpl ($value | toString) $ | quote }}
             {{- end }}
           {{- end }}
-          {{- if .Values.envFrom }}
+          {{- if .Values.plone.envFrom }}
           envFrom:
-          {{- toYaml .Values.envFrom | nindent 12 }}
+          {{- toYaml .Values.plone.envFrom | nindent 12 }}
           {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
