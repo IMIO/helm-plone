@@ -170,7 +170,7 @@ plone:
     COLLECTIVE_SOLR_PORT: "8983"
     COLLECTIVE_SOLR_BASE: "/solr/web"
     COLLECTIVE_SOLR_LOGIN: "solr"
-    COLLECTIVE_SOLR_PASSWORD: "SolrRocks"
+    # COLLECTIVE_SOLR_PASSWORD: "SolrRocks"
     application_id: "iA.Smartweb"
     keycloak_realm: "belleville-ac"
     keycloak_url: "https://keycloak.cloud.imio-test.be/"
