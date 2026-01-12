@@ -174,8 +174,8 @@ plone:
     application_id: "iA.Smartweb"
     keycloak_realm: "belleville-ac"
     keycloak_url: "https://keycloak.cloud.imio-test.be/"
-    keycloak_client_id: "smartweb-local"
-    keycloak_client_secret: ""
+    # keycloak_client_id: "smartweb-local"
+    # keycloak_client_secret: ""
     keycloak_issuer: "https://keycloak.cloud.imio-test.be/realms/belleville-ac/"
     keycloak_redirect_uris: ["http://localhost:8080/Plone/acl_users/oidc/callback"]
     DIRECTORY_URL: "https://annuaire.staging.imio.be"
