@@ -2,6 +2,14 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# Global hostname configuration
+hostname: "plone.traefik.me"
+imio_id: "belleville"
+imio_type: "ac"
+imio_app: "iA.Smartweb"
+plone_path: "/Plone"
+keycloak_url: "https://keycloak.cloud.imio-test.be/"
+
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
@@ -60,19 +68,21 @@ service:
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
-  className: "traefik"
-  annotations: {}
-    # kubernetes.io/ingress.class: traefik
-    # traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  className: "public"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /VirtualHostBase/https/{{ .Values.hostname }}:443{{ .Values.plone-path }}/VirtualHostRoot/$2
   hosts:
-    - host: plone.traefik.me
+    - host: "{{ .Values.hostname }}"
       paths:
-        - path: /
-          pathType: Prefix
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - plone.traefik.me
+        - path: /()(.*)
+          pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - "{{ .Values.hostname }}"
+      secretName: "{{ .Release.Name }}-{{ .Values.imio_id }}{{- if .Values.imio_type }}-{{ .Values.imio_type }}{{- end }}-tls"
 
 resources:
   limits:
@@ -155,29 +165,19 @@ plone:
     ENV: "dev"
     CACHING_SERVERS: "varnish"
     DOMAINS: "localhost"
-    # RELSTORAGE_DB: "zope"
-    # RELSTORAGE_USER: "zope"
-    # RELSTORAGE_PASSWORD: "zope"
-    # RELSTORAGE_HOSTNAME: "{{ .Release.Name }}-postgres"
-    # RELSTORAGE_PORT: "5432"
     ZODB_CACHE_SIZE: "30000"
     ZEO_CLIENT_CACHE_SIZE: "256MB"
     PROJECT_ID: "helm"
     PLONE_EXTENSION_IDS: "plone.app.caching:default,plonetheme.barceloneta:default,imio.smartweb.policy:default"
-    DEFAULT_LANGUAGE: "en"
+    DEFAULT_LANGUAGE: "fr"
     ACTIVE_BIGBANG: "False"
     COLLECTIVE_SOLR_HOST: "{{ .Release.Name }}-solr"
     COLLECTIVE_SOLR_PORT: "8983"
     COLLECTIVE_SOLR_BASE: "/solr/web"
-    COLLECTIVE_SOLR_LOGIN: "solr"
-    # COLLECTIVE_SOLR_PASSWORD: "SolrRocks"
-    application_id: "iA.Smartweb"
-    keycloak_realm: "belleville-ac"
-    keycloak_url: "https://keycloak.cloud.imio-test.be/"
-    # keycloak_client_id: "smartweb-local"
-    # keycloak_client_secret: ""
-    keycloak_issuer: "https://keycloak.cloud.imio-test.be/realms/belleville-ac/"
-    keycloak_redirect_uris: ["http://localhost:8080/Plone/acl_users/oidc/callback"]
+    application_id: "{{ .Values.imio_app }}"
+    keycloak_realm: "{{ .Values.imio_id }}{{- if .Values.imio_type }}-{{ .Values.imio_type }}{{- end }}"
+    keycloak_url: "{{ .Values.keycloak_url }}"
+    keycloak_issuer: "{{ .Values.keycloak_url }}realms/{{ .Values.imio_id }}{{- if .Values.imio_type }}-{{ .Values.imio_type }}{{- end }}/"
     DIRECTORY_URL: "https://annuaire.staging.imio.be"
     EVENTS_URL: "https://agenda.staging.imio.be"
     NEWS_URL: "https://actualites.staging.imio.be"
@@ -188,6 +188,7 @@ plone:
     RESTAPI_EVENTS_CLIENT_SECRET: ""
     RESTAPI_NEWS_CLIENT_ID: ""
     RESTAPI_NEWS_CLIENT_SECRET: ""
+    WEBSITE_HOSTNAME: "{{ .Values.hostname }}"
 
 # PostgreSQL configuration
 postgresql:
