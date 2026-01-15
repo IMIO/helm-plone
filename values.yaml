@@ -9,6 +9,8 @@ imio_type: "ac"
 imio_app: "iA.Smartweb"
 plone_path: "/Plone"
 keycloak_url: "https://keycloak.cloud.imio-test.be/"
+environment: "dev"
+language: "fr"
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -86,11 +88,11 @@ ingress:
 
 resources:
   limits:
-    cpu: 2000m
+    cpu: 2
     memory: 2Gi
   requests:
-    cpu: 500m
-    memory: 512Mi
+    cpu: 1
+    memory: 1Gi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
@@ -154,22 +156,22 @@ plone:
     failedJobsHistoryLimit: 1
     resources:
       limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
         cpu: 1000m
         memory: 1Gi
-      requests:
-        cpu: 250m
-        memory: 256Mi
   env:
     MEMCACHE_SERVER: "172.17.0.1"
     MEMCACHE_DEFAULT_AGE: "10800"
-    ENV: "dev"
+    ENV: "{{ .Values.environment }}"
     CACHING_SERVERS: "varnish"
     DOMAINS: "localhost"
     ZODB_CACHE_SIZE: "30000"
     ZEO_CLIENT_CACHE_SIZE: "256MB"
     PROJECT_ID: "helm"
     PLONE_EXTENSION_IDS: "plone.app.caching:default,plonetheme.barceloneta:default,imio.smartweb.policy:default"
-    DEFAULT_LANGUAGE: "fr"
+    DEFAULT_LANGUAGE: "{{ .Values.language | default \"en\" }}"
     ACTIVE_BIGBANG: "False"
     COLLECTIVE_SOLR_HOST: "{{ .Release.Name }}-solr"
     COLLECTIVE_SOLR_PORT: "8983"
