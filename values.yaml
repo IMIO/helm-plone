@@ -273,7 +273,7 @@ memcached:
 
 # External Secrets configuration
 externalSecret:
-  enabled: true
+  enabled: false
   secretStoreName: "vault-backend"
   secrets:
     - secretKey: RELSTORAGE_DB
