@@ -191,6 +191,11 @@ plone:
     RESTAPI_NEWS_CLIENT_ID: ""
     RESTAPI_NEWS_CLIENT_SECRET: ""
     WEBSITE_HOSTNAME: "{{ .Values.hostname }}"
+  # Optional: Load secrets from ExternalSecret
+  # Uncomment when externalSecret.enabled is true
+  # envFrom:
+  #   - secretRef:
+  #       name: release-name-plone-secret
 
 # PostgreSQL configuration
 postgresql:
@@ -265,3 +270,13 @@ memcached:
     requests:
       cpu: 100m
       memory: 256Mi
+
+# External Secrets configuration
+externalSecret:
+  enabled: true
+  secretStoreName: "vault-backend"
+  secrets:
+    - secretKey: RELSTORAGE_DB
+      remoteRef:
+        key: "team/{{ .Values.environment }}/databases/belleville"
+        property: db_name
