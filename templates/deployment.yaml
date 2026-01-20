@@ -138,8 +138,10 @@ spec:
             {{- end }}
           {{- end }}
           {{- if .Values.plone.envFrom }}
+          {{- with .Values.plone.envFrom }}
           envFrom:
-          {{- toYaml .Values.plone.envFrom | nindent 12 }}
+              {{- tpl (toYaml .) $ | nindent 12 }}
+          {{- end }}
           {{- end }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
