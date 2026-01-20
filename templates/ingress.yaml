@@ -8,7 +8,7 @@ metadata:
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- range $key, $value := . }}
-    {{ $key }}: {{ tpl ($value | toString) $ }}
+    {{ $key }}: {{ tpl ($value | toString | quote ) $ }}
     {{- end }}
   {{- end }}
 spec:
@@ -22,7 +22,7 @@ spec:
         {{- range $value := .hosts }}
         - {{ tpl ($value | toString) $ | quote }}
         {{- end }}
-      secretName: {{ tpl (.secretName | toString) $ }}
+      secretName: {{ tpl (.secretName | toString | quote ) $ }}
     {{- end }}
   {{- end }}
   rules:
