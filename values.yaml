@@ -75,7 +75,7 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt
     nginx.ingress.kubernetes.io/backend-protocol: HTTP
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /VirtualHostBase/https/{{ .Values.hostname }}:443{{ .Values.plone-path }}/VirtualHostRoot/$2
+    nginx.ingress.kubernetes.io/rewrite-target: /VirtualHostBase/https/{{ .Values.hostname }}:443{{ .Values.plone_path }}/VirtualHostRoot/$2
   hosts:
     - host: "{{ .Values.hostname }}"
       paths:

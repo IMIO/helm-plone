@@ -7,7 +7,9 @@ metadata:
     {{- include "plone.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+    {{- range $key, $value := . }}
+    {{ $key }}: {{ tpl ($value | toString) $ }}
+    {{- end }}
   {{- end }}
 spec:
   {{- with .Values.ingress.className }}
@@ -17,15 +19,15 @@ spec:
   tls:
     {{- range .Values.ingress.tls }}
     - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
+        {{- range $value := .hosts }}
+        - {{ tpl ($value | toString) $ | quote }}
         {{- end }}
-      secretName: {{ .secretName }}
+      secretName: {{ tpl (.secretName | toString) $ }}
     {{- end }}
   {{- end }}
   rules:
     {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ tpl (.host | toString) $ | quote }}
       http:
         paths:
           {{- range .paths }}
