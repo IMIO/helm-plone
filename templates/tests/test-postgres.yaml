@@ -7,17 +7,38 @@ metadata:
     {{- include "plone.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   containers:
     - name: postgres-test
-      image: postgres:14.2
+      image: postgres:16-alpine
       command:
         - sh
         - -c
         - |
-          pg_isready -h {{ include "plone.fullname" . }}-postgres -p 5432 -U {{ .Values.postgresql.auth.username }}
+          echo "Testing PostgreSQL connection..."
+          for i in $(seq 1 12); do
+            if pg_isready -h {{ include "plone.fullname" . }}-postgres -p 5432 -U {{ .Values.postgresql.auth.username }}; then
+              echo "PostgreSQL is ready!"
+              # Test actual connection
+              psql -h {{ include "plone.fullname" . }}-postgres -U {{ .Values.postgresql.auth.username }} -d {{ .Values.postgresql.auth.database }} -c "SELECT 1;" && echo "Database query successful!"
+              exit 0
+            fi
+            echo "Attempt $i: PostgreSQL not ready, waiting 5s..."
+            sleep 5
+          done
+          echo "ERROR: PostgreSQL did not respond"
+          exit 1
       env:
         - name: PGPASSWORD
           value: {{ .Values.postgresql.auth.password | quote }}
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
   restartPolicy: Never
+  activeDeadlineSeconds: 120
 {{- end }}

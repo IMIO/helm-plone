@@ -1,0 +1,41 @@
+suite: memcached tests
+templates:
+  - templates/memcached.yaml
+tests:
+  - it: should create memcached deployment when enabled
+    set:
+      memcached:
+        enabled: true
+        image:
+          repository: memcached
+          tag: "1.5.20"
+    asserts:
+      - isKind:
+          of: Deployment
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: memcached:1.5.20
+
+  - it: should not create memcached when disabled
+    set:
+      memcached:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should set resource limits correctly
+    set:
+      memcached:
+        enabled: true
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.cpu
+          value: 1000m
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.memory
+          value: 2Gi

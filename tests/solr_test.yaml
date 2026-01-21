@@ -1,0 +1,38 @@
+suite: solr tests
+templates:
+  - templates/solr.yaml
+tests:
+  - it: should create solr statefulset when enabled
+    set:
+      solr:
+        enabled: true
+        port: 8983
+        image:
+          repository: solr
+          tag: "9.6.1-slim"
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: solr:9.6.1-slim
+
+  - it: should not create solr when disabled
+    set:
+      solr:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should set persistence correctly
+    set:
+      solr:
+        enabled: true
+        persistence:
+          enabled: true
+          size: 16Gi
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 16Gi

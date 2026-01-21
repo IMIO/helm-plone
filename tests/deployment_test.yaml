@@ -1,0 +1,80 @@
+suite: deployment tests
+templates:
+  - templates/deployment.yaml
+tests:
+  - it: should create a deployment with default values
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.replicas
+          value: 1
+
+  - it: should use the correct image repository and tag
+    set:
+      image:
+        repository: my-plone-image
+        tag: "6.0.0"
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: my-plone-image:6.0.0
+
+  - it: should set replicas when autoscaling is disabled
+    set:
+      autoscaling:
+        enabled: false
+      replicaCount: 3
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: should not set replicas when autoscaling is enabled
+    set:
+      autoscaling:
+        enabled: true
+    asserts:
+      - isNull:
+          path: spec.replicas
+
+  - it: should set resource limits correctly
+    set:
+      resources:
+        limits:
+          cpu: 4
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 2Gi
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.cpu
+          value: 4
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.memory
+          value: 4Gi
+
+  - it: should include init container when plone.initContainer.enabled is true
+    set:
+      plone:
+        initContainer:
+          enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: plone-init
+          any: true
+
+  - it: should include solr wait container when solr is enabled
+    set:
+      solr:
+        enabled: true
+        port: 8983
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-solr
+          any: true

@@ -1,0 +1,69 @@
+suite: ingress tests
+templates:
+  - templates/ingress.yaml
+tests:
+  - it: should create an ingress when enabled
+    set:
+      ingress:
+        enabled: true
+        className: "public"
+        hosts:
+          - host: "plone.example.com"
+            paths:
+              - path: /
+                pathType: Prefix
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: spec.ingressClassName
+          value: public
+
+  - it: should not create an ingress when disabled
+    set:
+      ingress:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should set TLS configuration correctly
+    set:
+      ingress:
+        enabled: true
+        tls:
+          - hosts:
+              - "plone.example.com"
+            secretName: plone-tls
+    asserts:
+      - equal:
+          path: spec.tls[0].secretName
+          value: plone-tls
+      - contains:
+          path: spec.tls[0].hosts
+          content: "plone.example.com"
+
+  - it: should set annotations correctly
+    set:
+      ingress:
+        enabled: true
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt
+          nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    asserts:
+      - equal:
+          path: metadata.annotations["cert-manager.io/cluster-issuer"]
+          value: letsencrypt
+
+  - it: should resolve template variables in annotations
+    set:
+      hostname: "my-plone.example.com"
+      plone_path: "/Plone"
+      ingress:
+        enabled: true
+        annotations:
+          nginx.ingress.kubernetes.io/rewrite-target: "/VirtualHostBase/https/{{ .Values.hostname }}:443{{ .Values.plone_path }}/VirtualHostRoot/$2"
+    asserts:
+      - matchRegex:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/rewrite-target"]
+          pattern: my-plone.example.com

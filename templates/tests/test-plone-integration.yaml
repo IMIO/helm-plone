@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "plone.fullname" . }}-test-plone-health"
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "10"
+spec:
+  containers:
+    - name: plone-health
+      image: curlimages/curl:8.5.0
+      command:
+        - sh
+        - -c
+        - |
+          echo "=== Plone Integration Tests ==="
+          PLONE_URL="http://{{ include "plone.fullname" . }}:{{ .Values.service.port }}"
+          ERRORS=0
+
+          # Test 1: Check if Plone is responding
+          echo ""
+          echo "Test 1: Basic connectivity..."
+          for i in $(seq 1 24); do
+            if curl -sf --max-time 10 "$PLONE_URL/" > /dev/null 2>&1; then
+              echo "✓ Plone is responding"
+              break
+            fi
+            if [ $i -eq 24 ]; then
+              echo "✗ Plone did not respond within 2 minutes"
+              ERRORS=$((ERRORS + 1))
+            fi
+            echo "  Waiting for Plone... (attempt $i/24)"
+            sleep 5
+          done
+
+          # Test 2: Check @@ok endpoint (health check)
+          echo ""
+          echo "Test 2: Health check endpoint (@@ok)..."
+          RESPONSE=$(curl -sf --max-time 10 "$PLONE_URL/@@ok" 2>&1)
+          if [ $? -eq 0 ]; then
+            echo "✓ @@ok endpoint responded: $RESPONSE"
+          else
+            echo "⚠ @@ok endpoint not available (may not be configured)"
+          fi
+
+          # Test 3: Check API endpoint
+          echo ""
+          echo "Test 3: REST API endpoint..."
+          RESPONSE=$(curl -sf --max-time 10 -H "Accept: application/json" "$PLONE_URL/" 2>&1)
+          if echo "$RESPONSE" | grep -q "@type"; then
+            echo "✓ REST API is responding with JSON"
+          else
+            echo "⚠ REST API may not be configured"
+          fi
+
+          # Test 4: Check if Zope is running
+          echo ""
+          echo "Test 4: Zope management interface..."
+          HTTP_CODE=$(curl -sf --max-time 10 -o /dev/null -w "%{http_code}" "$PLONE_URL/manage_main" 2>&1)
+          if [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "200" ]; then
+            echo "✓ Zope management interface accessible (HTTP $HTTP_CODE)"
+          else
+            echo "⚠ Zope management interface returned HTTP $HTTP_CODE"
+          fi
+
+          {{- if .Values.solr.enabled }}
+          # Test 5: Check Solr connectivity from Plone perspective
+          echo ""
+          echo "Test 5: Solr connectivity..."
+          SOLR_URL="http://{{ include "plone.fullname" . }}-solr:{{ .Values.solr.port }}/solr/"
+          if curl -sf --max-time 10 "$SOLR_URL" > /dev/null 2>&1; then
+            echo "✓ Solr is accessible from Plone network"
+          else
+            echo "✗ Cannot reach Solr from Plone network"
+            ERRORS=$((ERRORS + 1))
+          fi
+          {{- end }}
+
+          echo ""
+          echo "=== Test Summary ==="
+          if [ $ERRORS -eq 0 ]; then
+            echo "All critical tests passed!"
+            exit 0
+          else
+            echo "Some tests failed ($ERRORS errors)"
+            exit 1
+          fi
+      resources:
+        limits:
+          cpu: 100m
+          memory: 64Mi
+        requests:
+          cpu: 50m
+          memory: 32Mi
+  restartPolicy: Never
+  activeDeadlineSeconds: 180

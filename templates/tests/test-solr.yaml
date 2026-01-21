@@ -7,14 +7,35 @@ metadata:
     {{- include "plone.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   containers:
     - name: solr-test
-      image: curlimages/curl:latest
+      image: curlimages/curl:8.5.0
       command:
         - sh
         - -c
         - |
-          curl -f http://{{ include "plone.fullname" . }}-solr:{{ .Values.solr.port }}/solr/
+          echo "Testing Solr connection..."
+          for i in $(seq 1 12); do
+            if curl -sf --max-time 5 "http://{{ include "plone.fullname" . }}-solr:{{ .Values.solr.port }}/solr/admin/info/system" > /dev/null; then
+              echo "Solr is responding!"
+              # Check if core/collection exists
+              curl -sf "http://{{ include "plone.fullname" . }}-solr:{{ .Values.solr.port }}/solr/admin/cores?action=STATUS" | head -20
+              exit 0
+            fi
+            echo "Attempt $i: Solr not ready, waiting 5s..."
+            sleep 5
+          done
+          echo "ERROR: Solr did not respond"
+          exit 1
+      resources:
+        limits:
+          cpu: 100m
+          memory: 64Mi
+        requests:
+          cpu: 50m
+          memory: 32Mi
   restartPolicy: Never
+  activeDeadlineSeconds: 120
 {{- end }}

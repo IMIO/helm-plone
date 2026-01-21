@@ -1,0 +1,42 @@
+suite: cronjob tests
+templates:
+  - templates/cronjob.yaml
+tests:
+  - it: should create cronjob when zodbpack is enabled
+    set:
+      plone:
+        zodbpack:
+          enabled: true
+          schedule: "0 5 * * 0"
+          command: "/plone/bin/zodbpack -d 14 /plone/pack.cfg"
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.schedule
+          value: "0 5 * * 0"
+
+  - it: should not create cronjob when zodbpack is disabled
+    set:
+      plone:
+        zodbpack:
+          enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should set history limits correctly
+    set:
+      plone:
+        zodbpack:
+          enabled: true
+          schedule: "0 5 * * 0"
+          successfulJobsHistoryLimit: 5
+          failedJobsHistoryLimit: 3
+    asserts:
+      - equal:
+          path: spec.successfulJobsHistoryLimit
+          value: 5
+      - equal:
+          path: spec.failedJobsHistoryLimit
+          value: 3
