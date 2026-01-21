@@ -11,7 +11,11 @@ plone_path: "/Plone"
 keycloak_url: "https://keycloak.cloud.imio-test.be/"
 solr_host: "{{ .Release.Name }}-solr"
 solr_port: 8983
-solr_base: "/solr/web"
+solr_base: "/solr/smartweb"
+solr_login: "solr"
+solr_ignore_certificate_check: true
+solr_https_connection: false
+
 environment: "dev"
 language: "fr"
 
@@ -178,7 +182,10 @@ plone:
     ACTIVE_BIGBANG: "False"
     COLLECTIVE_SOLR_HOST: "{{ .Values.solr_host }}"
     COLLECTIVE_SOLR_PORT: "{{ .Values.solr_port }}"
-    COLLECTIVE_SOLR_BASE: "{{ .Values.solr_base }}"
+    COLLECTIVE_SOLR_BASE: "{{ .Values.solr_base }}_{{ .Values.imio_id }}"
+    COLLECTIVE_SOLR_LOGIN: "{{ .Values.solr_login }}"
+    COLLECTIVE_SOLR_IGNORE_CERTIFICATE_CHECK: "{{ .Values.solr_ignore_certificate_check }}"
+    COLLECTIVE_SOLR_HTTPS_CONNECTION: "{{ .Values.solr_https_connection }}"
     application_id: "{{ .Values.imio_app }}"
     keycloak_realm: "{{ .Values.imio_id }}{{- if .Values.imio_type }}-{{ .Values.imio_type }}{{- end }}"
     keycloak_url: "{{ .Values.keycloak_url }}"
