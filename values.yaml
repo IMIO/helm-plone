@@ -264,6 +264,19 @@ solr:
       cpu: 250m
       memory: 512Mi
 
+# Blobstorage configuration (NFS)
+blobstorage:
+  enabled: false
+  mountPath: "/data/blobstorage"
+  persistence:
+    # Use an existing PVC (set to the name of existing PVC)
+    existingClaim: ""
+    # Storage class for NFS (e.g., "nfs-client", "nfs-csi")
+    storageClass: "nfs-client"
+    # Access mode - ReadWriteMany required for NFS shared storage
+    accessMode: ReadWriteMany
+    size: 10Gi
+
 # Memcached configuration
 memcached:
   enabled: true

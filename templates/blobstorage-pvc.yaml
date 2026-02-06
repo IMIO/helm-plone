@@ -1,0 +1,18 @@
+{{- if and .Values.blobstorage.enabled (not .Values.blobstorage.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "plone.fullname" . }}-blobstorage
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: blobstorage
+spec:
+  accessModes:
+    - {{ .Values.blobstorage.persistence.accessMode }}
+  {{- if .Values.blobstorage.persistence.storageClass }}
+  storageClassName: {{ .Values.blobstorage.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.blobstorage.persistence.size }}
+{{- end }}

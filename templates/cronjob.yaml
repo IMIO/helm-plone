@@ -55,12 +55,25 @@ spec:
               resources:
                 {{- toYaml . | nindent 16 }}
               {{- end }}
-              {{- with .Values.volumeMounts }}
+              {{- if or .Values.volumeMounts .Values.blobstorage.enabled }}
               volumeMounts:
+                {{- with .Values.volumeMounts }}
                 {{- toYaml . | nindent 16 }}
+                {{- end }}
+                {{- if .Values.blobstorage.enabled }}
+                - name: blobstorage
+                  mountPath: {{ .Values.blobstorage.mountPath }}
+                {{- end }}
               {{- end }}
-          {{- with .Values.volumes }}
+          {{- if or .Values.volumes .Values.blobstorage.enabled }}
           volumes:
+            {{- with .Values.volumes }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- if .Values.blobstorage.enabled }}
+            - name: blobstorage
+              persistentVolumeClaim:
+                claimName: {{ if .Values.blobstorage.persistence.existingClaim }}{{ .Values.blobstorage.persistence.existingClaim }}{{ else }}{{ include "plone.fullname" . }}-blobstorage{{ end }}
+            {{- end }}
           {{- end }}
 {{- end }}
