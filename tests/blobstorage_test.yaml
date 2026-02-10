@@ -1,0 +1,61 @@
+suite: blobstorage tests
+templates:
+  - templates/blobstorage-pvc.yaml
+tests:
+  - it: should not create PVC when blobstorage is disabled
+    set:
+      blobstorage:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create PVC when blobstorage is enabled
+    set:
+      blobstorage:
+        enabled: true
+        persistence:
+          storageClass: "ceph-block"
+          accessMode: ReadWriteOnce
+          size: 10Gi
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - equal:
+          path: spec.storageClassName
+          value: "ceph-block"
+      - equal:
+          path: spec.accessModes[0]
+          value: ReadWriteOnce
+      - equal:
+          path: spec.resources.requests.storage
+          value: 10Gi
+
+  - it: should not create PVC when existingClaim is set
+    set:
+      blobstorage:
+        enabled: true
+        persistence:
+          existingClaim: "my-existing-pvc"
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should use ceph-filesystem storage class with ReadWriteMany
+    set:
+      blobstorage:
+        enabled: true
+        persistence:
+          storageClass: "ceph-filesystem"
+          accessMode: ReadWriteMany
+          size: 20Gi
+    asserts:
+      - equal:
+          path: spec.storageClassName
+          value: "ceph-filesystem"
+      - equal:
+          path: spec.accessModes[0]
+          value: ReadWriteMany
+      - equal:
+          path: spec.resources.requests.storage
+          value: 20Gi
