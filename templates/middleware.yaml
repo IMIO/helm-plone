@@ -1,0 +1,12 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "plone.fullname" . }}-plone-vhm
+  labels:
+    {{- include "plone.labels" . | nindent 4 }}
+spec:
+  replacePathRegex:
+    regex: ^/(.*)
+    replacement: /VirtualHostBase/https/{{ tpl .Values.hostname . }}:443{{ .Values.plone_path }}/VirtualHostRoot/$1
+{{- end }}

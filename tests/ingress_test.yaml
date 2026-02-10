@@ -6,7 +6,7 @@ tests:
     set:
       ingress:
         enabled: true
-        className: "public"
+        className: "traefik"
         hosts:
           - host: "plone.example.com"
             paths:
@@ -17,7 +17,7 @@ tests:
           of: Ingress
       - equal:
           path: spec.ingressClassName
-          value: public
+          value: traefik
 
   - it: should not create an ingress when disabled
     set:
@@ -49,11 +49,14 @@ tests:
         enabled: true
         annotations:
           cert-manager.io/cluster-issuer: letsencrypt
-          nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
     asserts:
       - equal:
           path: metadata.annotations["cert-manager.io/cluster-issuer"]
           value: letsencrypt
+      - equal:
+          path: metadata.annotations["traefik.ingress.kubernetes.io/router.entrypoints"]
+          value: websecure
 
   - it: should resolve template variables in annotations
     set:
@@ -62,8 +65,8 @@ tests:
       ingress:
         enabled: true
         annotations:
-          nginx.ingress.kubernetes.io/rewrite-target: "/VirtualHostBase/https/{{ .Values.hostname }}:443{{ .Values.plone_path }}/VirtualHostRoot/$2"
+          traefik.ingress.kubernetes.io/router.middlewares: "{{ .Release.Namespace }}-{{ .Release.Name }}-plone-vhm@kubernetescrd"
     asserts:
       - matchRegex:
-          path: metadata.annotations["nginx.ingress.kubernetes.io/rewrite-target"]
-          pattern: my-plone.example.com
+          path: metadata.annotations["traefik.ingress.kubernetes.io/router.middlewares"]
+          pattern: plone-vhm@kubernetescrd

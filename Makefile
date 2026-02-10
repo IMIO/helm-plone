@@ -14,6 +14,10 @@ lint:
 	@docker run --rm -v $(shell pwd)/..:/workdir --workdir /workdir quay.io/helmpack/chart-testing:latest ct lint --chart-dirs . --charts plone --validate-maintainers=false
 	@echo "✓ Chart-testing lint passed"
 
+.PHONY: test  # Run Helm unit tests
+test:
+	@docker run --rm -v $(shell pwd):/apps helmunittest/helm-unittest:latest .
+
 .PHONY: release  # Create and push a git tag (usage: make release VERSION=1.0.0 MESSAGE="my release message")
 release:
 	@if [ -z "$(VERSION)" ]; then \

@@ -77,17 +77,16 @@ service:
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
-  className: "public"
+  className: "traefik"
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
-    nginx.ingress.kubernetes.io/backend-protocol: HTTP
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /VirtualHostBase/https/{{ .Values.hostname }}:443{{ .Values.plone_path }}/VirtualHostRoot/$2
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: "{{ .Release.Namespace }}-{{ .Release.Name }}-plone-vhm@kubernetescrd"
   hosts:
     - host: "{{ .Values.hostname }}"
       paths:
-        - path: /()(.*)
-          pathType: ImplementationSpecific
+        - path: /
+          pathType: Prefix
   tls:
     - hosts:
         - "{{ .Values.hostname }}"
