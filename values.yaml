@@ -78,19 +78,19 @@ service:
 ingress:
   enabled: false
   className: "traefik"
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: "{{ .Release.Namespace }}-{{ .Release.Name }}-plone-vhm@kubernetescrd"
+  # annotations:
+  #   cert-manager.io/cluster-issuer: letsencrypt
+  #   traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  #   traefik.ingress.kubernetes.io/router.middlewares: "{{ .Release.Namespace }}-{{ .Release.Name }}-plone-vhm@kubernetescrd"
   hosts:
     - host: "{{ .Values.hostname }}"
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    - hosts:
-        - "{{ .Values.hostname }}"
-      secretName: "{{ .Release.Name }}-{{ .Values.imio_id }}{{- if .Values.imio_type }}-{{ .Values.imio_type }}{{- end }}-tls"
+  # tls:
+  #   - hosts:
+  #       - "{{ .Values.hostname }}"
+  #     secretName: "{{ .Release.Name }}-{{ .Values.imio_id }}{{- if .Values.imio_type }}-{{ .Values.imio_type }}{{- end }}-tls"
 
 resources:
   limits:
