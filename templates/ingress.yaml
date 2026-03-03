@@ -6,10 +6,10 @@ metadata:
   labels:
     {{- include "plone.labels" . | nindent 4 }}
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: "{{ .Release.Namespace }}-{{ include "plone.fullname" . }}-plone-vhm@kubernetescrd"
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "plone.fullname" . }}-plone-vhm@kubernetescrd
     {{- with .Values.ingress.annotations }}
     {{- range $key, $value := . }}
-    {{ $key }}: {{ tpl ($value | toString | quote ) $ }}
+    {{ $key }}: {{ tpl ($value | toString) $ }}
     {{- end }}
     {{- end }}
 spec:

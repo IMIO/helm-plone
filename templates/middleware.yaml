@@ -8,5 +8,5 @@ metadata:
 spec:
   replacePathRegex:
     regex: ^/(.*)
-    replacement: /VirtualHostBase/https/{{ tpl .Values.hostname . }}:{{ .Values.virtualHostPort | default 443 }}{{ .Values.plone_path }}/VirtualHostRoot/$1
+    replacement: /VirtualHostBase/https/{{ tpl .Values.hostname . }}{{- if .Values.virtualHostPort }}:{{ .Values.virtualHostPort }}{{- end }}{{ .Values.plone_path }}/VirtualHostRoot/$1
 {{- end }}
