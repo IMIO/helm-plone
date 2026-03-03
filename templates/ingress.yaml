@@ -5,13 +5,12 @@ metadata:
   name: {{ include "plone.fullname" . }}
   labels:
     {{- include "plone.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "plone.fullname" . }}-plone-vhm@kubernetescrd
-    {{- with .Values.ingress.annotations }}
     {{- range $key, $value := . }}
     {{ $key }}: {{ tpl ($value | toString) $ }}
     {{- end }}
-    {{- end }}
+  {{- end }}
 spec:
   {{- with .Values.ingress.className }}
   ingressClassName: {{ . }}
