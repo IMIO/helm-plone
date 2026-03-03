@@ -31,3 +31,15 @@ tests:
       - equal:
           path: spec.replacePathRegex.regex
           value: ^/(.*)
+
+  - it: should use custom virtualHostPort when specified
+    set:
+      hostname: "plone.example.com"
+      plone_path: "/Plone"
+      virtualHostPort: 8080
+      ingress:
+        enabled: true
+    asserts:
+      - matchRegex:
+          path: spec.replacePathRegex.replacement
+          pattern: /VirtualHostBase/https/plone.example.com:8080/Plone/VirtualHostRoot/

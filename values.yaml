@@ -4,6 +4,8 @@
 
 # Global hostname configuration
 hostname: "plone.traefik.me"
+# Port for VirtualHostBase path (external-facing port, typically 443 for HTTPS)
+virtualHostPort: 443
 imio_id: "belleville"
 imio_type: "ac"
 imio_app: "iA.Smartweb"
