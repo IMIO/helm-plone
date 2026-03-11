@@ -102,6 +102,12 @@ spec:
             - name: {{ $key }}
               value: {{ tpl ($value | toString) $ | quote }}
             {{- end }}
+          {{- if .Values.plone.envFrom }}
+          {{- with .Values.plone.envFrom }}
+          envFrom:
+              {{- tpl (toYaml .) $ | nindent 12 }}
+          {{- end }}
+          {{- end }}
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

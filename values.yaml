@@ -5,7 +5,7 @@
 # Global hostname configuration
 hostname: "plone.traefik.me"
 # Port for VirtualHostBase path (external-facing port, typically 443 for HTTPS)
-# virtualHostPort: 443
+virtualHostPort: 443
 imio_id: "belleville"
 imio_type: "ac"
 imio_app: "iA.Smartweb"
@@ -294,6 +294,9 @@ memcached:
     requests:
       cpu: 100m
       memory: 256Mi
+
+# Extra arbitrary Kubernetes objects to render (supports tpl)
+extraObjects: []
 
 # External Secrets configuration
 externalSecret:
