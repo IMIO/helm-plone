@@ -46,6 +46,19 @@
       "minimum": 1,
       "default": 1
     },
+    "strategy": {
+      "type": "object",
+      "description": "Deployment update strategy. Use {type: Recreate} for a single-replica deployment backed by a ReadWriteOnce volume (e.g. Ceph RBD blobstorage).",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["RollingUpdate", "Recreate"]
+        },
+        "rollingUpdate": {
+          "type": "object"
+        }
+      }
+    },
     "image": {
       "type": "object",
       "required": ["repository"],

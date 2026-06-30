@@ -78,3 +78,17 @@ tests:
           content:
             name: wait-for-solr
           any: true
+
+  - it: should not set a strategy by default
+    asserts:
+      - isNull:
+          path: spec.strategy
+
+  - it: should set Recreate strategy when configured
+    set:
+      strategy:
+        type: Recreate
+    asserts:
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
