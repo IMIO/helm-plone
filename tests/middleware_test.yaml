@@ -13,7 +13,7 @@ tests:
           of: Middleware
       - matchRegex:
           path: spec.replacePathRegex.replacement
-          pattern: /VirtualHostBase/https/plone.example.com/Plone/VirtualHostRoot/
+          pattern: /VirtualHostBase/https/plone.example.com:443/Plone/VirtualHostRoot/
 
   - it: should not create middleware when ingress is disabled
     set:

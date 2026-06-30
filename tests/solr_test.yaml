@@ -2,7 +2,7 @@ suite: solr tests
 templates:
   - templates/solr.yaml
 tests:
-  - it: should create solr statefulset when enabled
+  - it: should create solr deployment when enabled
     set:
       solr:
         enabled: true
@@ -10,9 +10,12 @@ tests:
         image:
           repository: solr
           tag: "9.6.1-slim"
+    documentSelector:
+      path: kind
+      value: Deployment
     asserts:
       - isKind:
-          of: StatefulSet
+          of: Deployment
       - matchRegex:
           path: spec.template.spec.containers[0].image
           pattern: solr:9.6.1-slim
@@ -32,7 +35,10 @@ tests:
         persistence:
           enabled: true
           size: 16Gi
+    documentSelector:
+      path: kind
+      value: PersistentVolumeClaim
     asserts:
       - equal:
-          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          path: spec.resources.requests.storage
           value: 16Gi

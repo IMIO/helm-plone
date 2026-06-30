@@ -9,6 +9,9 @@ tests:
         image:
           repository: memcached
           tag: "1.5.20"
+    documentSelector:
+      path: kind
+      value: Deployment
     asserts:
       - isKind:
           of: Deployment
@@ -32,6 +35,9 @@ tests:
           limits:
             cpu: 1000m
             memory: 2Gi
+    documentSelector:
+      path: kind
+      value: Deployment
     asserts:
       - equal:
           path: spec.template.spec.containers[0].resources.limits.cpu
