@@ -51,6 +51,12 @@ spec:
                   value: {{ tpl ($value | toString) $ | quote }}
                 {{- end }}
               {{- end }}
+              {{- if .Values.plone.envFrom }}
+              {{- with .Values.plone.envFrom }}
+              envFrom:
+                {{- tpl (toYaml .) $ | nindent 16 }}
+              {{- end }}
+              {{- end }}
               {{- with .Values.plone.zodbpack.resources }}
               resources:
                 {{- toYaml . | nindent 16 }}

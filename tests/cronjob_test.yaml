@@ -40,3 +40,19 @@ tests:
       - equal:
           path: spec.failedJobsHistoryLimit
           value: 3
+
+  - it: should inject envFrom so pack.cfg DB credentials resolve
+    set:
+      plone:
+        zodbpack:
+          enabled: true
+          schedule: "0 5 * * 0"
+        envFrom:
+          - secretRef:
+              name: release-name-plone-secret
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: release-name-plone-secret
