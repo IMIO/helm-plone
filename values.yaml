@@ -101,6 +101,14 @@ ingress:
   #       - "{{ .Values.hostname }}"
   #     secretName: "{{ .Release.Name }}-{{ .Values.imio_id }}{{- if .Values.imio_type }}-{{ .Values.imio_type }}{{- end }}-tls"
 
+# Extra ports to declare on the plone container alongside the main http port,
+# e.g. a dedicated health-check port for plone.observability
+# (https://plone.github.io/plone.observability/how-to/configure-kubernetes-probes.html):
+# extraContainerPorts:
+#   - name: health
+#     containerPort: 8081
+extraContainerPorts: []
+
 resources:
   limits:
     cpu: 2

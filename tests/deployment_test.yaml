@@ -79,6 +79,24 @@ tests:
             name: wait-for-solr
           any: true
 
+  - it: should not add extra container ports by default
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.containers[0].ports
+          count: 1
+
+  - it: should add extra container ports when configured
+    set:
+      extraContainerPorts:
+        - name: health
+          containerPort: 8081
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: health
+            containerPort: 8081
+
   - it: should not set a strategy by default
     asserts:
       - isNull:
