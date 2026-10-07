@@ -110,3 +110,18 @@ tests:
       - equal:
           path: spec.strategy.type
           value: Recreate
+
+  - it: should not mount the service account token by default
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+
+  - it: should mount the service account token when enabled
+    set:
+      serviceAccount:
+        automountServiceAccountToken: true
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: true
