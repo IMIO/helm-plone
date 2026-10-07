@@ -24,6 +24,8 @@ spec:
           imagePullSecrets:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          serviceAccountName: {{ include "plone.serviceAccountName" . }}
+          automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
           restartPolicy: OnFailure
           {{- with .Values.podSecurityContext }}
           securityContext:

@@ -50,8 +50,9 @@ fullnameOverride: ""
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
+  # Mount the ServiceAccount API token in the Plone / zodbpack pods?
+  # Disabled by default: these pods never talk to the Kubernetes API.
+  automountServiceAccountToken: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.

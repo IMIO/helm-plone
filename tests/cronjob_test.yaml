@@ -56,3 +56,17 @@ tests:
           content:
             secretRef:
               name: release-name-plone-secret
+
+  - it: should use the chart service account without mounting its token by default
+    set:
+      plone:
+        zodbpack:
+          enabled: true
+          schedule: "0 5 * * 0"
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.serviceAccountName
+          value: RELEASE-NAME-plone
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.automountServiceAccountToken
+          value: false
