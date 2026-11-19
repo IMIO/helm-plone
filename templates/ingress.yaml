@@ -1,4 +1,5 @@
 {{- if .Values.ingress.enabled }}
+{{- $backendService := .Values.ingress.service | default dict }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -37,9 +38,9 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "plone.fullname" $ }}
+                name: {{ $backendService.name | default (include "plone.fullname" $) }}
                 port:
-                  number: {{ $.Values.service.port }}
+                  number: {{ $backendService.port | default $.Values.service.port }}
           {{- end }}
     {{- end }}
 {{- end }}

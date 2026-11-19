@@ -152,6 +152,19 @@
               }
             }
           }
+        },
+        "service": {
+          "type": "object",
+          "description": "Service the Ingress sends traffic to, e.g. a cache in front of Plone. An empty name means the chart's Plone Service; port 0 means service.port",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         }
       }
     },

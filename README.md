@@ -83,6 +83,8 @@ The following table lists the configurable parameters and their default values.
 | `ingress.enabled` | Enable ingress | `false` |
 | `ingress.className` | Ingress class name | `""` |
 | `ingress.hosts[0].host` | Hostname | `portal.localhost` |
+| `ingress.service.name` | Service the Ingress sends traffic to (e.g. a cache in front of Plone); empty means the Plone Service | `""` |
+| `ingress.service.port` | Port of that Service; `0` means `service.port` | `0` |
 
 ## Environment Variables
 
