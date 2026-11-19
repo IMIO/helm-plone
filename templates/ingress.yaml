@@ -37,9 +37,9 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "plone.fullname" $ }}
+                name: {{ $.Values.ingress.service.name | default (include "plone.fullname" $) }}
                 port:
-                  number: {{ $.Values.service.port }}
+                  number: {{ $.Values.ingress.service.port | default $.Values.service.port }}
           {{- end }}
     {{- end }}
 {{- end }}
