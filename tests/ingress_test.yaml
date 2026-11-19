@@ -31,6 +31,19 @@ tests:
           path: spec.rules[0].http.paths[0].backend.service.port.number
           value: 8080
 
+  - it: should fall back to the Plone service when ingress.service is null
+    set:
+      ingress:
+        enabled: true
+        service: null
+    asserts:
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.name
+          value: RELEASE-NAME-plone
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.port.number
+          value: 8080
+
   - it: should send traffic to another service when ingress.service is set
     set:
       ingress:
